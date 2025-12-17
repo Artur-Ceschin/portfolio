@@ -1,0 +1,65 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+          - deploy
+          - delete
+
+env:
+  AWS_REGION: us-east-1
+  STACK_NAME: portfolio-infrastructure
+
+jobs:
+  infrastructure:
+    name: Manage CloudFormation Stack
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Infrastructure
+
+      - name: Deploy CloudFormation Stack
+        if: github.event.inputs.action == 'deploy'
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation.yml \
+            --stack-name ${{ env.STACK_NAME }} \
+            --parameter-overrides \
+              DomainName=${{ secrets.DOMAIN_NAME }} \
+              HostedZoneId=${{ secrets.ROUTE53_HOSTED_ZONE_ID }} \
+            --capabilities CAPABILITY_IAM \
+            --no-fail-on-empty-changeset
+
+      - name: Get Stack Outputs
+        if: github.event.inputs.action == 'deploy'
+        run: |
+          echo "📦 Stack Outputs:"
+          aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs[*].[OutputKey,OutputValue]' \
+            --output table
+
+      - name: Delete CloudFormation Stack
+        if: github.event.inputs.action == 'delete'
+        run: |
+          aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
+          aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
+
