@@ -4,13 +4,12 @@ Description: "Static website hosting with S3, CloudFront, and Route53"
 Parameters:
   DomainName:
     Type: String
-    Description: "Domain name for the website (e.g., arturceschin.com.br)"
-    Default: "arturceschin.com.br"
+    Description: "Domain name for the website"
+    Default: "arturceschin-portfolio.com.br"
 
   HostedZoneId:
     Type: String
     Description: "Route53 Hosted Zone ID for the domain"
-    Default: "Z00091451D0YFBOPGEC46"
 
   CertificateArn:
     Type: String
