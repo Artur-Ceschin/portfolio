@@ -11,11 +11,10 @@ Parameters:
     Type: String
     Description: "Route53 Hosted Zone ID for the domain"
     Default: "Z00091451D0YFBOPGEC46"
-  
+
   CertificateArn:
     Type: String
-    Description: "ARN of existing ACM certificate"
-    Default: "arn:aws:acm:us-east-1:058264487329:certificate/c80e65ae-8933-4209-bbc3-5957a2d86c25"
+    Description: "ARN of existing ACM certificate (must be in us-east-1)"
 
 Resources:
   # S3 Bucket for website content

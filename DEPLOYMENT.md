@@ -144,13 +144,14 @@ Go to your GitHub repository → Settings → Secrets and variables → Actions 
 
 Add the following secrets:
 
-| Secret Name                  | Description                                       | Example                                                  |
-| ---------------------------- | ------------------------------------------------- | -------------------------------------------------------- |
-| `AWS_ROLE_ARN`               | ARN of the IAM role created above                 | `arn:aws:iam::123456789012:role/GitHubActionsDeployRole` |
-| `DOMAIN_NAME`                | Your domain name                                  | `arturceschin.dev`                                       |
-| `ROUTE53_HOSTED_ZONE_ID`     | Route53 Hosted Zone ID                            | `Z1234567890ABC`                                         |
-| `S3_BUCKET_NAME`             | Will be created by CloudFormation                 | `arturceschin.dev-website`                               |
-| `CLOUDFRONT_DISTRIBUTION_ID` | Will be available after infrastructure deployment | `E1234567890ABC`                                         |
+| Secret Name                  | Description                                        | Example                                                  |
+| ---------------------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| `AWS_ROLE_ARN`               | ARN of the IAM role created above                  | `arn:aws:iam::123456789012:role/GitHubActionsDeployRole` |
+| `DOMAIN_NAME`                | Your domain name                                   | `arturceschin.dev`                                       |
+| `ROUTE53_HOSTED_ZONE_ID`     | Route53 Hosted Zone ID                             | `Z1234567890ABC`                                         |
+| `ACM_CERTIFICATE_ARN`        | ARN of your ACM certificate (must be in us-east-1) | `arn:aws:acm:us-east-1:123456789012:certificate/...`     |
+| `S3_BUCKET_NAME`             | Will be created by CloudFormation                  | `arturceschin.dev-website`                               |
+| `CLOUDFRONT_DISTRIBUTION_ID` | Will be available after infrastructure deployment  | `E1234567890ABC`                                         |
 
 ### 4. Deploy Infrastructure
 

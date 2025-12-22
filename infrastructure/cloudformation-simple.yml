@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Static website hosting with S3 and Route53 (no CloudFront)"
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: "Domain name for the website"
+    Default: "arturceschin.com.br"
+
+  HostedZoneId:
+    Type: String
+    Description: "Route53 Hosted Zone ID for the domain"
+    Default: "Z00091451D0YFBOPGEC46"
+
+Resources:
+  # S3 Bucket for website content
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${DomainName}-website"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+      Tags:
+        - Key: Name
+          Value: !Sub "${DomainName}-website"
+
+  # S3 Bucket Policy for public access
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${WebsiteBucket.Arn}/*"
+
+  # WWW Bucket - redirects to main domain
+  WWWBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "www.${DomainName}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+          Protocol: http
+
+  # Route53 DNS Record for apex domain
+  DNSRecordRoot:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Sub "s3-website-${AWS::Region}.amazonaws.com"
+        HostedZoneId: Z3AQBSTGFYJSTF # S3 website hosted zone for us-east-1
+        EvaluateTargetHealth: false
+
+  # Route53 DNS Record for www subdomain
+  DNSRecordWWW:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub "www.${DomainName}"
+      Type: A
+      AliasTarget:
+        DNSName: !Sub "s3-website-${AWS::Region}.amazonaws.com"
+        HostedZoneId: Z3AQBSTGFYJSTF # S3 website hosted zone for us-east-1
+        EvaluateTargetHealth: false
+
+Outputs:
+  WebsiteBucketName:
+    Description: "Name of the S3 bucket"
+    Value: !Ref WebsiteBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-BucketName"
+
+  WebsiteURL:
+    Description: "Website URL"
+    Value: !Sub "http://${DomainName}"
+    Export:
+      Name: !Sub "${AWS::StackName}-WebsiteURL"
+
+  S3WebsiteURL:
+    Description: "S3 Website Endpoint"
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Export:
+      Name: !Sub "${AWS::StackName}-S3WebsiteURL"
