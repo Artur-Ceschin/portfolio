@@ -4,13 +4,18 @@ Description: "Static website hosting with S3, CloudFront, and Route53"
 Parameters:
   DomainName:
     Type: String
-    Description: "Domain name for the website (e.g., arturceschin.dev)"
-    Default: "arturceschin.dev"
+    Description: "Domain name for the website (e.g., arturceschin.com.br)"
+    Default: "arturceschin.com.br"
 
   HostedZoneId:
     Type: String
     Description: "Route53 Hosted Zone ID for the domain"
-    Default: ""
+    Default: "Z00091451D0YFBOPGEC46"
+  
+  CertificateArn:
+    Type: String
+    Description: "ARN of existing ACM certificate"
+    Default: "arn:aws:acm:us-east-1:058264487329:certificate/c80e65ae-8933-4209-bbc3-5957a2d86c25"
 
 Resources:
   # S3 Bucket for website content
@@ -70,7 +75,7 @@ Resources:
           - !Ref DomainName
           - !Sub "www.${DomainName}"
         ViewerCertificate:
-          AcmCertificateArn: !Ref Certificate
+          AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021
         Origins:
@@ -97,20 +102,6 @@ Resources:
           - ErrorCode: 403
             ResponseCode: 404
             ResponsePagePath: /404.html
-
-  # ACM Certificate for HTTPS
-  Certificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !Ref DomainName
-      SubjectAlternativeNames:
-        - !Sub "www.${DomainName}"
-      ValidationMethod: DNS
-      DomainValidationOptions:
-        - DomainName: !Ref DomainName
-          HostedZoneId: !Ref HostedZoneId
-        - DomainName: !Sub "www.${DomainName}"
-          HostedZoneId: !Ref HostedZoneId
 
   # Route53 DNS Records
   DNSRecordRoot:
