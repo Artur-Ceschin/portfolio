@@ -44,15 +44,9 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync out/ s3://${{ secrets.S3_BUCKET_NAME }} --delete --cache-control max-age=31536000,public
-
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+          aws s3 sync out/ s3://${{ secrets.DOMAIN_NAME }}-website --delete --cache-control max-age=31536000,public
 
       - name: Deployment successful
         run: |
           echo "✅ Deployment completed successfully!"
-          echo "🌐 Website URL: https://${{ secrets.DOMAIN_NAME }}"
+          echo "🌐 Website URL: http://${{ secrets.DOMAIN_NAME }}"
