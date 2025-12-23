@@ -17,7 +17,7 @@ Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${DomainName}-website"
+      BucketName: !Ref DomainName
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -28,7 +28,7 @@ Resources:
         ErrorDocument: 404.html
       Tags:
         - Key: Name
-          Value: !Sub "${DomainName}-website"
+          Value: !Ref DomainName
 
   # S3 Bucket Policy for public access
   WebsiteBucketPolicy:

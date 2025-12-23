@@ -44,7 +44,7 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync out/ s3://${{ secrets.DOMAIN_NAME }}-website --delete --cache-control max-age=31536000,public
+          aws s3 sync out/ s3://${{ secrets.DOMAIN_NAME }} --delete --cache-control max-age=31536000,public
 
       - name: Deployment successful
         run: |
