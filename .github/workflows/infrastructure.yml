@@ -37,7 +37,9 @@ jobs:
           role-session-name: GitHubActions-Infrastructure
 
       - name: Deploy CloudFormation Stack
+        id: deploy
         if: github.event.inputs.action == 'deploy'
+        continue-on-error: true
         run: |
           aws cloudformation deploy \
             --template-file infrastructure/cloudformation.yml \
@@ -48,6 +50,24 @@ jobs:
               CertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset
+
+      - name: Show CloudFormation Errors
+        if: steps.deploy.outcome == 'failure'
+        run: |
+          echo "❌ CloudFormation deployment failed. Fetching error details..."
+          echo ""
+          echo "=== FAILED RESOURCES ==="
+          aws cloudformation describe-stack-events \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'StackEvents[?ResourceStatus==`CREATE_FAILED` || ResourceStatus==`UPDATE_FAILED`].[Timestamp,LogicalResourceId,ResourceStatusReason]' \
+            --output table
+          echo ""
+          echo "=== STACK STATUS ==="
+          aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].[StackStatus,StackStatusReason]' \
+            --output table 2>/dev/null || echo "Stack may not exist"
+          exit 1
 
       - name: Get Stack Outputs
         if: github.event.inputs.action == 'deploy'
